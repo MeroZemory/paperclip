@@ -80,6 +80,17 @@ jobs:
         working-directory: server
         run: pnpm exec vitest run --config vitest.integration.config.ts k8s-cli-end-to-end
 
+      # M3a: opt-in real-claude-code test. Runs only on PRs from the same
+      # repo (forks don't get secret access). Empirical measurement test is
+      # NOT in CI — operator runs it on-demand.
+      - name: Run real-claude-code integration test (gated on Anthropic key)
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' && github.event.pull_request.head.repo.fork == false }}
+        env:
+          K8S_INTEGRATION: "1"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        working-directory: packages/adapters/kubernetes-execution
+        run: pnpm exec vitest run test/integration/claude-code-real.test.ts
+
       - name: Collect kind cluster logs on failure
         if: failure()
         run: |
