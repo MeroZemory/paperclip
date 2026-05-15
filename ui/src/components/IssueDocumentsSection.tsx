@@ -17,6 +17,7 @@ import { deriveDocumentRevisionState } from "../lib/document-revisions";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, relativeTime } from "../lib/utils";
 import { FoldCurtain } from "./FoldCurtain";
+import { IssueDocumentAnnotations } from "./IssueDocumentAnnotations";
 import { MarkdownBody } from "./MarkdownBody";
 import { MarkdownEditor, type MentionOption } from "./MarkdownEditor";
 import { OutputFeedbackButtons } from "./OutputFeedbackButtons";
@@ -204,8 +205,10 @@ export function IssueDocumentsSection({
       predicate: (query) =>
         Array.isArray(query.queryKey)
         && query.queryKey[0] === "issues"
-        && query.queryKey[1] === "document-revisions"
-        && query.queryKey[2] === issue.id,
+        && (
+          (query.queryKey[1] === "document-revisions" && query.queryKey[2] === issue.id)
+          || (query.queryKey[1] === "document-annotations" && query.queryKey[2] === issue.id)
+        ),
     });
   }, [issue.id, queryClient]);
 
@@ -1089,31 +1092,44 @@ export function IssueDocumentsSection({
                       activeDraft || isHistoricalPreview ? "" : "rounded-md hover:bg-accent/10"
                     }`}
                   >
-                    {isHistoricalPreview ? (
-                      renderFoldableBody(displayedBody, documentBodyContentClassName)
-                    ) : activeDraft ? (
-                      <MarkdownEditor
-                        value={displayedBody}
-                        onChange={(body) => {
-                          markDocumentDirty(doc.key);
-                          setDraft((current) => {
-                            if (current && current.key === doc.key && !current.isNew) {
-                              return { ...current, body };
-                            }
-                            return current;
-                          });
-                        }}
-                        placeholder="Markdown body"
-                        bordered={false}
-                        className="bg-transparent"
-                        contentClassName={documentBodyContentClassName}
-                        mentions={mentions}
-                        imageUploadHandler={imageUploadHandler}
-                        onSubmit={() => void commitDraft(activeDraft ?? draft, { clearAfterSave: false, trackAutosave: true })}
-                      />
-                    ) : (
-                      renderFoldableBody(displayedBody, documentBodyContentClassName)
-                    )}
+                    <IssueDocumentAnnotations
+                      issueId={issue.id}
+                      doc={doc}
+                      bodyMarkdown={displayedBody}
+                      draftDirty={Boolean(activeDraft) && (
+                        (activeDraft?.body ?? doc.body) !== doc.body
+                        || (autosaveDocumentKey === doc.key && autosaveState === "saving")
+                      )}
+                      draftConflicted={Boolean(activeConflict)}
+                      historicalPreview={isHistoricalPreview}
+                      locationHash={location.hash}
+                    >
+                      {isHistoricalPreview ? (
+                        renderFoldableBody(displayedBody, documentBodyContentClassName)
+                      ) : activeDraft ? (
+                        <MarkdownEditor
+                          value={displayedBody}
+                          onChange={(body) => {
+                            markDocumentDirty(doc.key);
+                            setDraft((current) => {
+                              if (current && current.key === doc.key && !current.isNew) {
+                                return { ...current, body };
+                              }
+                              return current;
+                            });
+                          }}
+                          placeholder="Markdown body"
+                          bordered={false}
+                          className="bg-transparent"
+                          contentClassName={documentBodyContentClassName}
+                          mentions={mentions}
+                          imageUploadHandler={imageUploadHandler}
+                          onSubmit={() => void commitDraft(activeDraft ?? draft, { clearAfterSave: false, trackAutosave: true })}
+                        />
+                      ) : (
+                        renderFoldableBody(displayedBody, documentBodyContentClassName)
+                      )}
+                    </IssueDocumentAnnotations>
                   </div>
                   <div className="flex min-h-4 items-center justify-end px-1">
                     <span
