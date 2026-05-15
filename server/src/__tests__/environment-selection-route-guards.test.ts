@@ -85,6 +85,7 @@ vi.mock("../services/index.js", () => ({
     listActiveForIssues: vi.fn(async () => new Map()),
   }),
   documentService: () => ({}),
+  documentAnnotationService: () => ({}),
   routineService: () => ({}),
   workProductService: () => ({}),
 }));
