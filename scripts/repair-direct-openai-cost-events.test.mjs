@@ -15,10 +15,17 @@ function runHelperCheck(source) {
 }
 
 describe("repair-direct-openai-cost-events", () => {
-  it("starts through the package script and prints help", () => {
+  it("starts through the documented direct command and prints help", () => {
     const output = execFileSync(
       "pnpm",
-      ["cost-events:repair-openai", "--", "--help"],
+      [
+        "--filter",
+        "@paperclipai/db",
+        "exec",
+        "tsx",
+        "../../scripts/repair-direct-openai-cost-events.ts",
+        "--help",
+      ],
       { cwd: repoRoot, encoding: "utf8" },
     );
 

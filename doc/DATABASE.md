@@ -39,6 +39,16 @@ pnpm issue-references:backfill -- --company <company-id>
 
 Future issue, comment, and document writes sync references automatically without running the backfill command.
 
+Direct OpenAI metered cost events can also be repaired after migrating when older
+rows have nonzero token usage but no biller/provenance cost. Run the repair in
+dry-run mode first:
+
+```sh
+pnpm --filter @paperclipai/db exec tsx ../../scripts/repair-direct-openai-cost-events.ts --agent-name "Senior Planning Engineer Pro"
+```
+
+Then apply the same scoped command with `--apply` after reviewing the event list.
+
 This mode is ideal for local development and one-command installs.
 
 Docker note: the Docker quickstart image also uses embedded PostgreSQL by default. Persist `/paperclip` to keep DB state across container restarts (see `doc/DOCKER.md`).

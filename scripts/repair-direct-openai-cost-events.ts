@@ -469,8 +469,8 @@ function printHelp() {
   console.log(`Repair direct OpenAI metered cost_events rows with nonzero tokens and missing cost/provenance.
 
 Usage:
-  pnpm cost-events:repair-openai -- --agent-name "Senior Planning Engineer Pro"
-  pnpm cost-events:repair-openai -- --agent-name "Senior Planning Engineer Pro" --apply
+  pnpm --filter @paperclipai/db exec tsx ../../scripts/repair-direct-openai-cost-events.ts --agent-name "Senior Planning Engineer Pro"
+  pnpm --filter @paperclipai/db exec tsx ../../scripts/repair-direct-openai-cost-events.ts --agent-name "Senior Planning Engineer Pro" --apply
 
 Options:
   --apply              Persist repairs. Omit for dry-run.
