@@ -188,18 +188,19 @@ export function companyRoutes(db: Db, storage?: StorageService) {
     res.json(importJobResponse(job));
   });
 
-  router.post("/import", validate(companyPortabilityImportSchema), async (req, res) => {
+  router.post("/import", async (req, res) => {
     assertBoard(req);
-    assertImportTargetAccess(req, req.body.target);
+    const rawImportBody: unknown = req.body;
     const actor = getActorInfo(req);
-    const importBody = req.body;
     const boardUserId = req.actor.type === "board" ? req.actor.userId : null;
-    const activity = importedCompanyActivityContext(actor, importBody.include ?? null);
     if (req.header("x-paperclip-cloud-async-import") === "1") {
       assertCloudTenantCaller(req);
       const job = createImportJob(cloudTenantRequestKey(req));
       importJobs.set(job.id, job);
       const operation = async () => {
+        const importBody = companyPortabilityImportSchema.parse(rawImportBody);
+        assertImportTargetAccess(req, importBody.target);
+        const activity = importedCompanyActivityContext(actor, importBody.include ?? null);
         const result = await portability.importBundle(importBody, boardUserId);
         await logImportedCompanyActivity(db, activity, result);
         return result;
@@ -211,6 +212,9 @@ export function companyRoutes(db: Db, storage?: StorageService) {
       return;
     }
 
+    const importBody = companyPortabilityImportSchema.parse(rawImportBody);
+    assertImportTargetAccess(req, importBody.target);
+    const activity = importedCompanyActivityContext(actor, importBody.include ?? null);
     const result = await portability.importBundle(importBody, boardUserId);
     await logImportedCompanyActivity(db, activity, result);
     res.json(result);
