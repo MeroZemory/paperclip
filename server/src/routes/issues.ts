@@ -91,6 +91,7 @@ import {
   SVG_CONTENT_TYPE,
 } from "../attachment-types.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
+import { evaluateIssueAmbiguity } from "../services/issue-ambiguity.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
 import { executionWorkspaceService as executionWorkspaceServiceDirect } from "../services/execution-workspaces.js";
 import { feedbackService } from "../services/feedback.js";
@@ -2136,6 +2137,10 @@ export function issueRoutes(
           }
         : null,
       currentExecutionWorkspace,
+      ambiguitySignal: evaluateIssueAmbiguity({
+        title: issue.title,
+        description: issue.description,
+      }),
     });
   });
 
